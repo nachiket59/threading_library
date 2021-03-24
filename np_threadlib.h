@@ -13,16 +13,6 @@ typedef struct {
 	int stack_size;
 } thread_attributes;
 
-typedef struct {
-	int tid;
-}thread_control_block;
-
-typedef struct thread_list{
-	int data;
-	thread_control_block tcb;
-	struct thread_list *next;
-	struct thread_list *prev;
-}thread_list;
-
 int thread_create(int*, thread_attributes*,int(*)(void*), void* );
 void init_thread_attributes(thread_attributes *);
+int thread_join(int);

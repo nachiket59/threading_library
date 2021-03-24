@@ -4,12 +4,14 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <signal.h>
 #include "np_threadlib.h"
+#include "thread_list.h"
 
-threads all_threads;
+thread_list *tlist_start = NULL;
 
 void *safe_malloc(size_t n)
 {
@@ -31,6 +33,7 @@ void init_thread_attributes(thread_attributes * attributes){
 
 int thread_create(int* tid, thread_attributes* attributes,int (*fun)(void*), void* parameters ){
 	int pid;
+	thread_control_block tcb;
 	if(attributes == NULL){
 		attributes = malloc(sizeof(thread_attributes));
 		init_thread_attributes(attributes);
@@ -38,18 +41,22 @@ int thread_create(int* tid, thread_attributes* attributes,int (*fun)(void*), voi
 
 	void * stack = safe_malloc(attributes->stack_size);
 
-	pid = clone(*fun, stack,CLONE_FS | CLONE_FILES | CLONE_SIGHAND | CLONE_VM | SIGCHLD, parameters);
+	pid = clone(*fun, stack, CLONE_FS | CLONE_FILES | CLONE_SIGHAND | CLONE_VM | SIGCHLD, parameters);
 	
 	if(pid != 0){
 		*tid = pid;
-		printf("in child %d\n", pid);
+		tcb.tid = pid;
+		tlist_insert_end(&tlist_start, tcb);
 	}
-	else{
-		printf("in parent\n");
-	}
+
 	return 1; 
 }
 
+int thread_join(int tid){
+	int wstatus;
+	waitpid(tid,&wstatus,WUNTRACED);	
+	return wstatus;
+}
 
 
 

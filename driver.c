@@ -16,6 +16,7 @@ int fun(void* params){
 int main(){
 	int tid;
 	thread_create(&tid, NULL, fun, NULL);
+	thread_join(tid);
 	printf("in the thread %d\n", tid);
 	return 0;
 }

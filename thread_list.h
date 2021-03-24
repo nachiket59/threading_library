@@ -1,4 +1,14 @@
-void insertEnd(thread_list** , int value)
-void insertBegin(thread_list** , int value)
-void insertAfter(thread_list** , int value1, int value2)
-void display(thread_list* )
+typedef struct {
+	int tid;
+}thread_control_block;
+
+typedef struct thread_list{
+	int data;
+	thread_control_block tcb;
+	struct thread_list *next;
+	struct thread_list *prev;
+}thread_list;
+
+void tlist_insert_end(thread_list** , thread_control_block );
+void tlist_insert_begin(thread_list** , thread_control_block );
+void tlist_display(thread_list* start);

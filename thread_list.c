@@ -1,17 +1,17 @@
 // Structure of a Node
 #include <stdio.h>
 #include<stdlib.h>
-#include "np_threadlib.h"
+#include "thread_list.h"
 
 // Function to insert at the end
-void insertEnd(thread_list** start, int value)
+void tlist_insert_end(thread_list** start, thread_control_block tcb)
 {
 	// If the list is empty, create a single node
 	// circular and doubly list
 	if (*start == NULL)
 	{
 		thread_list* new_node = malloc(sizeof(thread_list));
-		new_node->data = value;
+		new_node->tcb = tcb;
 		new_node->next = new_node->prev = new_node;
 		*start = new_node;
 		return;
@@ -24,7 +24,7 @@ void insertEnd(thread_list** start, int value)
 
 	// Create Node dynamically
 	thread_list* new_node = malloc(sizeof(thread_list));
-	new_node->data = value;
+	new_node->tcb = tcb;
 
 	// Start is going to be next of new_node
 	new_node->next = *start;
@@ -41,13 +41,13 @@ void insertEnd(thread_list** start, int value)
 
 // Function to insert Node at the beginning
 // of the List,
-void insertBegin(thread_list** start, int value)
+void tlist_insert_begin(thread_list** start, thread_control_block tcb)
 {
 	// Pointer points to last Node
 	thread_list *last = (*start)->prev;
 
 	thread_list* new_node = malloc(sizeof(thread_list));
-	new_node->data = value; // Inserting the data
+	new_node->tcb = tcb; // Inserting the data
 
 	// setting up previous and next of malloc(sizeof(thread_list))
 	new_node->next = *start;
@@ -61,30 +61,8 @@ void insertBegin(thread_list** start, int value)
 	*start = new_node;
 }
 
-// Function to insert node with value as value1.
-// The malloc(sizeof(thread_list)) is inserted after the node with
-// with value2
-void insertAfter(thread_list** start, int value1,
-									int value2)
-{
-	thread_list* new_node = malloc(sizeof(thread_list));
-	new_node->data = value1; // Inserting the data
 
-	// Find node having value2 and next node of it
-	thread_list *temp = *start;
-	while (temp->data != value2)
-		temp = temp->next;
-	thread_list *next = temp->next;
-
-	// insert new_node between temp and next.
-	temp->next = new_node;
-	new_node->prev = temp;
-	new_node->next = next;
-	next->prev = new_node;
-}
-
-
-void display(thread_list* start)
+void tlist_display(thread_list* start)
 {
 	thread_list *temp = start;
 
