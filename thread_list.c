@@ -7,7 +7,7 @@
 
 
 // Function to insert at the end
-void tlist_insert_end(thread_list** start, thread_control_block* tcb)
+void tlist_insert_end(thread_list** start, thread_control_block tcb)
 {
 	// If the list is empty, create a single node
 	// circular and doubly list
@@ -44,7 +44,7 @@ void tlist_insert_end(thread_list** start, thread_control_block* tcb)
 
 // Function to insert Node at the beginning
 // of the List,
-void tlist_insert_begin(thread_list** start, thread_control_block* tcb)
+void tlist_insert_begin(thread_list** start, thread_control_block tcb)
 {
 	// Pointer points to last Node
 	thread_list *last = (*start)->prev;

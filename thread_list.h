@@ -4,7 +4,7 @@ typedef struct {
 
 struct thread_list{
 	int data;
-	thread_control_block *tcb;
+	thread_control_block tcb;
 	struct thread_list *next;
 	struct thread_list *prev;
 };
