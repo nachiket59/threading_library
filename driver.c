@@ -9,27 +9,32 @@
 #include "np_threadlib.h"
 
 int fun1(void* params){
-	sleep(5);
+
+	sleep(10);
 	printf("in the thread1\n");
 }
 int fun2(void* params){	
-	sleep(10);
+	sleep(15);
 	printf("in the thread2\n");
 }
 int fun3(void* params){
-	sleep(15);
+	sleep(20);
+
 	printf("in the thread3\n");
 }
 
 int main(){
-	int tid1,tid2,tid3;
+
+
+	int tid1, tid2, tid3;
+
 	thread_create(&tid1, NULL, fun1, NULL);
 	thread_create(&tid2, NULL, fun2, NULL);
 	thread_create(&tid3, NULL, fun3, NULL);
 	thread_join(tid1);
-	printf("here\n");
+
 	thread_join(tid2);
 	thread_join(tid3);
-	printf("end of main\n");
+
 	return 0;
 }
