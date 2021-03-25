@@ -11,7 +11,7 @@
 #include "np_threadlib.h"
 #include "thread_list.h"
 
-thread_list *tlist_start = NULL;
+thread_list* tlist_start = NULL;
 
 void *safe_malloc(size_t n)
 {
@@ -47,6 +47,7 @@ int thread_create(int* tid, thread_attributes* attributes,int (*fun)(void*), voi
 		*tid = pid;
 		tcb.tid = pid;
 		tlist_insert_end(&tlist_start, tcb);
+		tlist_display(tlist_start);
 	}
 
 	return 1; 
@@ -54,7 +55,9 @@ int thread_create(int* tid, thread_attributes* attributes,int (*fun)(void*), voi
 
 int thread_join(int tid){
 	int wstatus;
-	waitpid(tid,&wstatus,WUNTRACED);	
+	waitpid(tid,&wstatus,WUNTRACED);
+	tlist_delete(&tlist_start,tid);	
+	tlist_display(tlist_start);
 	return wstatus;
 }
 
