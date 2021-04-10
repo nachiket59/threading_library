@@ -1,5 +1,8 @@
+#include <ucontext.h>
 typedef struct {
 	int tid;
+	void *stack;
+	ucontext_t *context;
 }thread_control_block;
 
 struct thread_list{
@@ -14,4 +17,5 @@ void tlist_insert_end(thread_list** , thread_control_block );
 void tlist_insert_begin(thread_list** , thread_control_block );
 void tlist_display(thread_list* start);
 void tlist_delete(thread_list** start, int key);
+thread_list* tlist_search(thread_list* start, int tid);
 

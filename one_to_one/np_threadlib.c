@@ -21,7 +21,11 @@ void init_thread_attributes(thread_attributes * attributes){
 	return; 
 }
 
-int thread_create_one_one(int* tid, thread_attributes* attributes, int (*fun)(void*), void* parameters){
+int thread_create(int* tid, thread_attributes* attributes,int (*fun)(void*), void* parameters ){
+	if(attributes == NULL){
+		attributes = malloc(sizeof(thread_attributes));
+		init_thread_attributes(attributes);
+	}
 	int pid;
 	thread_control_block tcb;
 	char* stack = malloc(attributes->stack_size);
@@ -29,7 +33,7 @@ int thread_create_one_one(int* tid, thread_attributes* attributes, int (*fun)(vo
 	    perror("malloc error");
 	    return 1;
 	}
-
+	tcb.stack_ptr = stack;
 	pid = clone(*fun, stack + attributes->stack_size, CLONE_FS | CLONE_FILES | CLONE_SIGHAND | CLONE_VM | SIGCHLD, parameters);
 	
 	if(pid != 0){
@@ -40,32 +44,29 @@ int thread_create_one_one(int* tid, thread_attributes* attributes, int (*fun)(vo
 		spin_lock_release(&thread_list_lock);
 		//tlist_display(tlist_start);
 	}
-
 	return 0;
 }
 
-int thread_create(int* tid, thread_attributes* attributes,int (*fun)(void*), void* parameters ){
-	if(attributes == NULL){
-		attributes = malloc(sizeof(thread_attributes));
-		init_thread_attributes(attributes);
-	}
-	if(attributes->scheduling_policy == ONE_TO_ONE){
-		thread_create_one_one(tid, attributes, fun, parameters);	
-	}
-	 
-}
-
 int thread_join(int tid){
-	//printf("joined\n");
+	thread_list* thread;
 	int wstatus;
 	waitpid(tid,&wstatus,WUNTRACED);
-	
-	//tlist_display(tlist_start);
+
 	spin_lock_aquire(&thread_list_lock);
-	tlist_delete(&tlist_start,tid);
-	spin_lock_release(&thread_list_lock);
-	//tlist_display(tlist_start);
 	
+	thread = tlist_search(tlist_start, tid);
+	if(thread  != NULL){
+		free(thread->tcb.stack_ptr);
+		tlist_delete(&tlist_start, tid);
+
+	spin_lock_release(&thread_list_lock);	
+	}
+
+	else{
+		return 1;
+	}
+
+	return 0;
 }
 
 void spin_lock_aquire(spin_lock* sl){

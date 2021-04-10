@@ -151,3 +151,18 @@ void tlist_delete(thread_list** start, int key)
         free(curr);
     }
 }
+
+thread_list* tlist_search(thread_list* start, int tid){
+	thread_list *temp = start;
+	while (temp->next != start)
+	{
+		if(temp->tcb.tid == tid){
+			return temp;
+		}
+		temp = temp->next;
+	}
+	if(temp->tcb.tid == tid){
+			return temp;
+	}
+	return NULL;
+}
