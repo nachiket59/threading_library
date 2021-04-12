@@ -7,7 +7,7 @@
 spin_lock s;
 
 long c = 0, c1 = 0, c2 = 0, run = 1;
-int thread1(void *arg) {
+void* thread1(void *arg) {
 	while(run == 1) {
 		spin_lock_aquire(&s);
 		c++;
@@ -15,12 +15,12 @@ int thread1(void *arg) {
 		spin_lock_release(&s);
 	}
 }
-int thread2(void *arg) {
+void* thread2(void *arg) {
 	int t1;
 	thread_attributes ta;
-	init_thread_attributes(&ta);
-	ta.stack_size = 4096;
-	thread_create(&t1, NULL, thread1, NULL);
+	//init_thread_attributes(&ta);
+	//ta.stack_size = 4096;
+	//thread_create(&t1, NULL, thread1, NULL);
 	while(run == 1) {
 		spin_lock_aquire(&s);
 		c++;
@@ -28,10 +28,11 @@ int thread2(void *arg) {
 		spin_lock_release(&s);
 	}
 	
-	thread_join(t1);
+	//	thread_join(t1);
 }
 int main() {
 	//spin_lock_init(&s);
+	thread_library_init();
 	int th1, th2; 
 	thread_create(&th1, NULL, thread1, NULL);
 	thread_create(&th2, NULL, thread2, NULL);

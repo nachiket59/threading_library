@@ -2,6 +2,12 @@
 typedef struct {
 	int tid;
 	void *stack;
+	void *sched_stack;
+	void *(*start_routine) (void *);
+	void *params;
+	void *return_val;
+	int state;
+	ucontext_t *sched_context;
 	ucontext_t *context;
 }thread_control_block;
 

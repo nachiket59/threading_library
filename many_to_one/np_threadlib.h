@@ -22,7 +22,7 @@ typedef struct {
 	int stack_size;
 } thread_attributes;
 
-int thread_create(int*, thread_attributes*,void(*)(), void* );
+int thread_create(int*, thread_attributes*,void*(*)(void*), void* );
 
 void init_thread_attributes(thread_attributes *);
 
