@@ -3,11 +3,13 @@
 #include <sched.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/syscall.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <linux/futex.h>
 #include "np_threadlib.h"
 #include "thread_list.h"
 
@@ -77,6 +79,30 @@ void spin_lock_release(spin_lock* sl){
 	atomic_flag_clear(sl);
 }
 
+
+void thread_mutex_lock(mutex_lock* lock){
+		while(1){
+			if(atomic_compare_exchange_strong( lock->lock, lock->unlocked, MUTEX_LOCK ))
+				break;
+
+			futex(lock->lock, FUTEX_WAIT, MUTEX_UNLOCK, NULL, NULL, 0);
+
+		}
+}
+
+void thread_mutex_unlock(mutex_lock* lock){
+
+	if(atomic_compare_exchange_strong(lock->lock, lock->locked, MUTEX_UNLOCK)){
+		futex(lock->lock, FUTEX_WAKE, MUTEX_UNLOCK, NULL, NULL, 0);
+	}
+
+}
+
+void thread_mutex_init(mutex_lock* lock){
+	atomic_store( lock->lock , 0);
+	atomic_store(lock->locked, 1);
+	atomic_store(lock->unlocked, 0);
+}
 
 
 

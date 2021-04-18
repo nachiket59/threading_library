@@ -6,30 +6,33 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <signal.h>
 #include "np_threadlib.h"
-
+int tid1, tid2, tid3;
 void* fun1(void* args){
-	while(1){
-		sleep(1);
-		printf("in the thread1\n");}
-}
+	thread_kill(tid3, SIGTERM);
+	// while(1){
+	// 	sleep(1);
+		printf("in the thread1\n");
+	}
+// }
 void* fun2(void* args){	
-	while(1){
-		sleep(1);
+	// while(1){
+	// 	sleep(1);
 		printf("in the thread2\n");
 	}	
-}
+// }
 void* fun3(void* args){
-	while(1){
-		sleep(1);
+	// while(1){
+	// 	sleep(1);
 		printf("in the thread3\n");	
 	}	
-}
+// }
 
 int main(){
 	thread_library_init();
 
-	int tid1, tid2, tid3;
+	
 
 	thread_create(&tid1, NULL, fun1, NULL);
 	thread_create(&tid2, NULL, fun2, NULL);
