@@ -3,13 +3,14 @@
 #include <sched.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <linux/futex.h>
 #include <sys/syscall.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <signal.h>
-#include <linux/futex.h>
+#include <limits.h>
 #include "np_threadlib.h"
 #include "thread_list.h"
 
@@ -81,27 +82,26 @@ void spin_lock_release(spin_lock* sl){
 
 
 void thread_mutex_lock(mutex_lock* lock){
-		while(1){
-			if(atomic_compare_exchange_strong( lock->lock, lock->unlocked, MUTEX_LOCK ))
-				break;
-
-			futex(lock->lock, FUTEX_WAIT, MUTEX_UNLOCK, NULL, NULL, 0);
-
+		while(!atomic_compare_exchange_strong( lock->lock, lock->unlocked, MUTEX_LOCK )){
+			syscall(SYS_futex, lock->lock, FUTEX_WAIT, MUTEX_LOCK, NULL, NULL, 0);
 		}
 }
 
 void thread_mutex_unlock(mutex_lock* lock){
 
 	if(atomic_compare_exchange_strong(lock->lock, lock->locked, MUTEX_UNLOCK)){
-		futex(lock->lock, FUTEX_WAKE, MUTEX_UNLOCK, NULL, NULL, 0);
+		syscall(SYS_futex, lock->lock, FUTEX_WAKE, INT_MAX, NULL, NULL, 0);
 	}
 
 }
 
 void thread_mutex_init(mutex_lock* lock){
-	atomic_store( lock->lock , 0);
-	atomic_store(lock->locked, 1);
-	atomic_store(lock->unlocked, 0);
+	lock->lock = malloc(sizeof(_Atomic int));
+	lock->locked = malloc(sizeof(_Atomic int));	
+	lock->unlocked =malloc(sizeof(_Atomic int));
+	atomic_store( lock->lock , MUTEX_UNLOCK);
+	atomic_store(lock->locked, MUTEX_LOCK);
+	atomic_store(lock->unlocked, MUTEX_UNLOCK);
 }
 
 

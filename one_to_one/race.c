@@ -4,15 +4,17 @@
 #include <unistd.h>
 #include "np_threadlib.h"
 
-spin_lock s;
-
+//spin_lock s;
+mutex_lock m_lock;
 long c = 0, c1 = 0, c2 = 0, run = 1;
 int thread1(void *arg) {
 	while(run == 1) {
-		spin_lock_aquire(&s);
+		thread_mutex_lock(&m_lock);
+		//spin_lock_aquire(&s);
 		c++;
 		c1++;
-		spin_lock_release(&s);
+		thread_mutex_unlock(&m_lock);
+		//spin_lock_release(&s);
 	}
 }
 int thread2(void *arg) {
@@ -20,18 +22,21 @@ int thread2(void *arg) {
 	thread_attributes ta;
 	init_thread_attributes(&ta);
 	ta.stack_size = 4096;
-	thread_create(&t1, NULL, thread1, NULL);
+	//thread_create(&t1, NULL, thread1, NULL);
 	while(run == 1) {
-		spin_lock_aquire(&s);
+		thread_mutex_lock(&m_lock);
+		//spin_lock_aquire(&s);
 		c++;
 		c2++;
-		spin_lock_release(&s);
+		thread_mutex_unlock(&m_lock);
+		//spin_lock_release(&s);
 	}
 	
-	thread_join(t1);
+	//thread_join(t1);
 }
 int main() {
 	//spin_lock_init(&s);
+	thread_mutex_init(&m_lock);
 	int th1, th2; 
 	thread_create(&th1, NULL, thread1, NULL);
 	thread_create(&th2, NULL, thread2, NULL);

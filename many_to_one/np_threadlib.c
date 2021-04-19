@@ -14,8 +14,8 @@
 #include "thread_list.h"
 #include "thread_queue.h"
 
-#define TIMER_SEC 1
-#define TIMER_U_SEC 0
+#define TIMER_SEC 0
+#define TIMER_U_SEC 20
 
 #define RUNNABLE 0
 #define RETURNED 1
@@ -48,7 +48,7 @@ void handle_term();
 
 void schedular() {
 	//ignore alalrm signal 
-	signal(SIGALRM, SIG_IGN);
+	signal(SIGVTALRM, SIG_IGN);
 
 	int tid; 
 	tid = tq_pop(&ready_queue);
@@ -85,17 +85,14 @@ void schedular() {
 		tq_append(&ready_queue,thread->tcb.tid);
 
 		//allow the sigalarm
-		signal(SIGALRM, handle_alarm);
+		signal(SIGVTALRM, handle_alarm);
 		
 		swapcontext(thread->tcb.context, cur_context);
 	}
 }
 
-
 void handle_alarm() {
-	
 	schedular();
-	
 }
 
 void start_timer(){
@@ -108,12 +105,12 @@ void start_timer(){
 	interval.it_interval = interval_time;
 	interval.it_value = interval_time;
 
-	setitimer(ITIMER_REAL, &interval, NULL);
+	setitimer(ITIMER_VIRTUAL, &interval, NULL);
 }
 
 void call_thread(int tid){
 	
-	signal(SIGALRM, handle_alarm);
+	signal(SIGVTALRM, handle_alarm);
 
 	thread_list* thread = tlist_search(tlist_start, tid);
 	if(thread != NULL){
@@ -133,7 +130,7 @@ void init_thread_attributes(thread_attributes * attributes){
 }
 
 int thread_library_init(){
-	signal(SIGALRM, handle_alarm);
+	signal(SIGVTALRM, handle_alarm);
 	signal(SIGTSTP, handle_stop);
 	signal(SIGCONT, handle_cont);
 	signal(SIGTERM, handle_term);
@@ -141,7 +138,7 @@ int thread_library_init(){
 }
 
 int thread_create(int* tid, thread_attributes* attributes,void*(*fun)(void*), void* parameters ){
-	signal(SIGALRM, SIG_IGN);
+	signal(SIGVTALRM, SIG_IGN);
 
 	if(attributes == NULL) {
 		attributes = malloc(sizeof(thread_attributes));
@@ -227,7 +224,7 @@ int thread_create(int* tid, thread_attributes* attributes,void*(*fun)(void*), vo
 		tq_append(&ready_queue, tcb.tid);
 		*tid = tcb.tid;
 	}
-	signal(SIGALRM, handle_alarm);
+	signal(SIGVTALRM, handle_alarm);
 }
 
 int thread_join(int tid){
@@ -276,11 +273,11 @@ void thread_mutex_init(mutex_lock* lock){
 
 void handle_stop(){
 	//ignore alalrm signal 
-	signal(SIGALRM, SIG_IGN);
+	signal(SIGVTALRM, SIG_IGN);
 	// printf("int stop\n");
 	if(stop_tid == 0){
 		printf("in main stop\n");
-		signal(SIGALRM, handle_alarm);
+		signal(SIGVTALRM, handle_alarm);
 		kill(getpid(),SIGSTOP);
 	}
 	else{
@@ -294,24 +291,24 @@ void handle_stop(){
 	}
 
 	//allow the sigalarm
-	signal(SIGALRM, handle_alarm);
+	signal(SIGVTALRM, handle_alarm);
 }
 
 void handle_cont(){
 	//ignore alalrm signal 
-	signal(SIGALRM, SIG_IGN);
+	signal(SIGVTALRM, SIG_IGN);
 	// printf("int cont\n");
 	if(cont_tid != 0){
 		thread_list* thread = tlist_search(tlist_start, cont_tid);
 		thread->tcb.state = RUNNABLE;
 	}
 	//allow the sigalarm
-	signal(SIGALRM, handle_alarm);
+	signal(SIGVTALRM, handle_alarm);
 }
 
 void handle_term(){
 	//ignore alalrm signal 
-	signal(SIGALRM, SIG_IGN);
+	signal(SIGVTALRM, SIG_IGN);
 	// printf("int term\n");
 	if(term_tid != 0){
 		thread_list* thread = tlist_search(tlist_start, term_tid);
@@ -319,7 +316,7 @@ void handle_term(){
 		printf("Terminated thread: %d\n",term_tid );
 	}
 	//allow the sigalarm
-	signal(SIGALRM, handle_alarm);
+	signal(SIGVTALRM, handle_alarm);
 }
 
 void thread_kill(int thread_no,int signo){
@@ -333,7 +330,7 @@ void thread_kill(int thread_no,int signo){
 		kill(getpid(), SIGCONT);
 		cont_tid = 0;
 	}
-	if(signo == SIGTERM){
+	if(signo == SIGTERM || signo == SIGKILL || signo == SIGINT){
 		term_tid = thread_no;
 		kill(getpid(),SIGTERM);
 		term_tid = 0;
