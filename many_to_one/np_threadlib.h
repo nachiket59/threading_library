@@ -33,27 +33,17 @@ typedef struct {
 } thread_attributes;
 
 int thread_create(int*, thread_attributes*,void*(*)(void*), void* );
-
 void init_thread_attributes(thread_attributes *);
-
-int thread_join(int);
-
+int thread_join(int, void**);
 void thread_kill(int, int);
-
 int thread_library_init();
-
-void start_timer();
+void thread_exit(void *);
 
 int spin_lock_init(spin_lock* );
-
 void spin_lock_aquire(spin_lock* );
-
 void spin_lock_release(spin_lock* );
-
 void spin_lock_destroy(spin_lock* );
 
 void thread_mutex_lock(mutex_lock *);
-
 void thread_mutex_unlock(mutex_lock *);
-
 void thread_mutex_init(mutex_lock* );

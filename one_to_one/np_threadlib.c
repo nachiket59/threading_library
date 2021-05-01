@@ -50,15 +50,19 @@ int thread_create(int* tid, thread_attributes* attributes,int (*fun)(void*), voi
 	return 0;
 }
 
-int thread_join(int tid){
+int thread_join(int tid, void **retval){
+	
 	thread_list* thread;
 	int wstatus;
 	waitpid(tid,&wstatus,WUNTRACED);
-
 	spin_lock_aquire(&thread_list_lock);
 	
 	thread = tlist_search(tlist_start, tid);
 	if(thread  != NULL){
+		if(retval != NULL){
+			*retval = thread->tcb.return_val;
+			
+		}
 		free(thread->tcb.stack_ptr);
 		tlist_delete(&tlist_start, tid);
 
@@ -66,10 +70,31 @@ int thread_join(int tid){
 	}
 
 	else{
+		spin_lock_release(&thread_list_lock);
 		return 1;
 	}
 
 	return 0;
+}
+
+void thread_exit(void *retval){
+	int tid = gettid();
+	thread_list* thread;
+	spin_lock_aquire(&thread_list_lock);
+
+	thread = tlist_search(tlist_start, tid);
+	if(thread  != NULL){
+		
+		thread->tcb.return_val = retval;
+	}
+
+	spin_lock_release(&thread_list_lock);
+}
+
+int thread_kill(int tid, int signo){
+	int err;
+	err = kill(tid,signo);
+	return err;
 }
 
 void spin_lock_aquire(spin_lock* sl){
@@ -79,7 +104,6 @@ void spin_lock_aquire(spin_lock* sl){
 void spin_lock_release(spin_lock* sl){
 	atomic_flag_clear(sl);
 }
-
 
 void thread_mutex_lock(mutex_lock* lock){
 		while(!atomic_compare_exchange_strong( lock->lock, lock->unlocked, MUTEX_LOCK )){

@@ -1,6 +1,7 @@
 typedef struct {
 	int tid;
 	void *stack_ptr;
+	void *return_val;
 }thread_control_block;
 
 struct thread_list{

@@ -36,14 +36,15 @@ int thread_create(int*, thread_attributes*,int(*)(void*), void* );
 
 void init_thread_attributes(thread_attributes *);
 
-int thread_join(int);
+int thread_join(int, void** retval);
+
+void thread_exit(void *);
+
+int thread_kill(int , int );
 
 int spin_lock_init(spin_lock* );
-
 void spin_lock_aquire(spin_lock* );
-
 void spin_lock_release(spin_lock* );
-
 void spin_lock_destroy(spin_lock* );	
 
 void thread_mutex_lock(mutex_lock* );

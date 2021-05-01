@@ -59,7 +59,7 @@ void schedular() {
 
 		//printf("tid %d\n",tid );
 		thread_list* thread = tlist_search(tlist_start, tid);
-		printf("tid: %d state: %d\n",tid, thread->tcb.state );
+		//printf("tid: %d state: %d\n",tid, thread->tcb.state );
 		while(thread->tcb.state != RUNNABLE){
 			if(thread->tcb.state == RETURNED) {
 				//printf("state returned %d\n", thread->tcb.state);
@@ -114,7 +114,7 @@ void call_thread(int tid){
 
 	thread_list* thread = tlist_search(tlist_start, tid);
 	if(thread != NULL){
-		thread->tcb.return_val = (thread->tcb.start_routine)(thread->tcb.params);
+		thread->tcb.start_routine(thread->tcb.params);
 		thread->tcb.state = RETURNED;
 		//printf("returned %d\n",thread->tcb.state);
 		//sleep(1);
@@ -227,14 +227,25 @@ int thread_create(int* tid, thread_attributes* attributes,void*(*fun)(void*), vo
 	signal(SIGVTALRM, handle_alarm);
 }
 
-int thread_join(int tid){
+int thread_join(int tid, void **retval){
+	signal(SIGVTALRM, SIG_IGN);
 	thread_list* thread = tlist_search(tlist_start, tid);
+	signal(SIGVTALRM, handle_alarm);
+	if(thread == NULL){
+		return 0;
+	}
 	while(thread->tcb.state != RETURNED)
 		;
+	signal(SIGVTALRM, SIG_IGN);
+	if(retval != NULL){
+		*retval = thread->tcb.return_val;
+	}
 	free(thread->tcb.stack);
 	free(thread->tcb.sched_stack);
 	free(thread->tcb.sched_context);
 	free(thread->tcb.context);
+	
+	signal(SIGVTALRM, handle_alarm);
 	printf("joined %d\n", tid);
 }
 
@@ -313,6 +324,10 @@ void handle_term(){
 	if(term_tid != 0){
 		thread_list* thread = tlist_search(tlist_start, term_tid);
 		thread->tcb.state = RETURNED;
+		if(term_tid == cur_tid){
+			term_tid = 0;
+			schedular();
+		}
 		printf("Terminated thread: %d\n",term_tid );
 	}
 	//allow the sigalarm
@@ -337,7 +352,16 @@ void thread_kill(int thread_no,int signo){
 	}
 }
 
+void thread_exit(void *retval){
+	signal(SIGVTALRM, SIG_IGN);
 
+	thread_list* thread = tlist_search(tlist_start, cur_tid);
+	thread->tcb.return_val = retval;
+	thread->tcb.state = RETURNED;
+	schedular();
+	
+	signal(SIGVTALRM, handle_alarm);
+}
 
 
 
