@@ -6,5 +6,6 @@
 	./test4_1
 	./test4_2
 	./test4_3
+	./test5
 	 cat matrix_test_case |./matrix > matrix_output
 	 less matrix_output 
