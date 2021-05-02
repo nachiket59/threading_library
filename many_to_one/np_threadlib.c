@@ -225,6 +225,7 @@ int thread_create(int* tid, thread_attributes* attributes,void*(*fun)(void*), vo
 		*tid = tcb.tid;
 	}
 	signal(SIGVTALRM, handle_alarm);
+	return 0;
 }
 
 int thread_join(int tid, void **retval){
@@ -246,7 +247,7 @@ int thread_join(int tid, void **retval){
 	free(thread->tcb.context);
 	
 	signal(SIGVTALRM, handle_alarm);
-	printf("joined %d\n", tid);
+	//printf("joined %d\n", tid);
 }
 
 void spin_lock_aquire(spin_lock* sl){
@@ -285,13 +286,14 @@ void thread_mutex_init(mutex_lock* lock){
 void handle_stop(){
 	//ignore alalrm signal 
 	signal(SIGVTALRM, SIG_IGN);
-	// printf("int stop\n");
+	
 	if(stop_tid == 0){
-		printf("in main stop\n");
+		//printf("in main stop\n");
 		signal(SIGVTALRM, handle_alarm);
 		kill(getpid(),SIGSTOP);
 	}
 	else{
+		// printf("int stop\n");
 		thread_list* thread = tlist_search(tlist_start, stop_tid);
 		thread->tcb.state = STOPPED;
 		if(stop_tid == cur_tid){
@@ -308,8 +310,9 @@ void handle_stop(){
 void handle_cont(){
 	//ignore alalrm signal 
 	signal(SIGVTALRM, SIG_IGN);
-	// printf("int cont\n");
+	
 	if(cont_tid != 0){
+		 // printf("int cont\n");
 		thread_list* thread = tlist_search(tlist_start, cont_tid);
 		thread->tcb.state = RUNNABLE;
 	}
@@ -328,7 +331,7 @@ void handle_term(){
 			term_tid = 0;
 			schedular();
 		}
-		printf("Terminated thread: %d\n",term_tid );
+		//printf("Terminated thread: %d\n",term_tid );
 	}
 	//allow the sigalarm
 	signal(SIGVTALRM, handle_alarm);

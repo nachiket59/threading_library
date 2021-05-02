@@ -33,7 +33,8 @@ int multiply(void* a){
 }
 
 int main(){
-	
+	printf("Test Case: Doing 1000 * 1000 matrix multiplication.\n");
+	printf("Both are unit matrices. Expected result is  1000 * 1000 matrix with all 1000s.\n");
 	int thrd1,thrd2,thrd3;
 	struct args* a1 = malloc(sizeof(struct args));
 	struct args* a2 = malloc(sizeof(struct args));
@@ -67,6 +68,7 @@ int main(){
 	for(i = 0; i< r1; i++){
 		m3[i] = malloc(sizeof(int) * c2);
 	}
+	thread_library_init();
 	if(c2>3){
 		int t1 = 0, t2 = 0, t3 = 0;
 		int x = c2;

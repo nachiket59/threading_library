@@ -45,7 +45,6 @@ int thread_create(int* tid, thread_attributes* attributes,int (*fun)(void*), voi
 		spin_lock_aquire(&thread_list_lock);
 		tlist_insert_end(&tlist_start, tcb);
 		spin_lock_release(&thread_list_lock);
-		//tlist_display(tlist_start);
 	}
 	return 0;
 }
